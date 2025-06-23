@@ -1,0 +1,38 @@
+services:
+  mainpostgresdb:
+    image: postgres
+
+  interactionspostgresdb:
+    image: postgres
+
+  authdb:
+    image: mcr.microsoft.com/mssql/server
+    
+  distributedcache:
+    image: redis
+
+  messagebroker:
+    image: rabbitmq:management
+    
+  mainapi:
+    image: ${DOCKER_REGISTRY-}mainapi
+    build:
+      context: .
+      dockerfile: MainApi/Dockerfile
+      
+  authapi:
+    image: authapi
+    build:
+      context: .
+      dockerfile: AuthApi/Dockerfile
+
+
+  userinteractions.api:
+    image: userinteractions.api
+    build:
+      context: .
+      dockerfile: UsersInteractions/UserInteractions.Api/Dockerfile
+
+volumes:
+  mainpostgresdb_catalog:   
+  interactionspostgres_catalog:

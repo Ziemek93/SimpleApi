@@ -1,0 +1,115 @@
+services:
+  mainpostgresdb:
+    container_name: mainpostgresdb
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=somesecretpassword123
+      - POSTGRES_DB=SomeApp
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - mainpostgresdb_catalog:/var/lib/postgresql/data/
+        
+  interactionspostgresdb:
+    container_name: interactionspostgresdb
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=somesecretpassword123
+      - POSTGRES_DB=InteractionsDbConnection
+    restart: always
+    ports:
+      - "5433:5432"
+    volumes:
+      - interactionspostgres_catalog:/var/lib/postgresql/data/
+  
+  authdb:
+    container_name: authdb
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=SwN12345678
+    restart: always
+    ports:
+      - "1433:1433"
+      
+  distributedcache:
+    container_name: distributedcache
+    restart: always
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--requirepass", "somesecretpassword123"]
+    
+  messagebroker:
+    container_name: messagebroker
+    hostname: interactions
+    environment:
+      - RABBITMQ_DEFAULT_USER=interactions
+      - RABBITMQ_DEFAULT_PASS=secretpaswd
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  
+  authapi:
+    depends_on:
+      - authdb
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__AuthDb=Server=authdb;Database=AuthDb;User Id=sa;Password=SwN12345678;TrustServerCertificate=True
+      - M2MClient__ClientSecret=${ClientSecret}
+      - Jwt__PrivateKey=${JWT_PRIVATE_KEY_XML}
+    ports:
+      - "6000:8080"
+      - "6060:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+  
+  userinteractions.api:
+    depends_on:
+      - authdb
+      - interactionspostgresdb
+      - distributedcache
+      - messagebroker
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__InteractionsDbConnection=Server=interactionspostgresdb:5432;Database=InteractionsDbConnection;User id=postgres;Password=somesecretpassword123
+      - ConnectionStrings__RabbitMq=amqp://interactions:secretpaswd@messagebroker:5672
+      - ConnectionStrings__Redis=distributedcache:6379,password=somesecretpassword123,abortConnect=false
+    ports:
+      - "6001:8080"
+      - "6061:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+  
+  mainapi:
+    depends_on:
+      - mainpostgresdb
+      - interactionspostgresdb
+      - authdb
+      - messagebroker
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__SomeAppDbConnection=Server=mainpostgresdb:5432;Database=SomeApp;User id=postgres;Password=somesecretpassword123
+      - ConnectionStrings__RabbitMq=amqp://interactions:secretpaswd@messagebroker:5672
+      - AuthApi__Base=https://authapi:1433
+      - M2MClient__ClientSecret=${ClientSecret}
+    ports:
+      - "6002:8080"
+      - "6062:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
