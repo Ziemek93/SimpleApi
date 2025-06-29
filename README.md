@@ -6,35 +6,6 @@ This project is a simple microservices-based (unfinished) project developed usin
 
 The application is divided into three main services, each with specific tasks. They are supported by a common infrastructure layer that includes a database, a message broker, and a cache.
 
-```mermaid
-graph TD
-
-
-    subgraph "Backend Services"
-        direction LR
-        MainApi[MainApi]
-        AuthApi[AuthApi]
-        UserInteractions[UserInteractions]
-    end
-
-    subgraph Infrastructure
-        direction LR
-        DB[(PostgreSQL)]
-        Broker([RabbitMQ])
-        Cache[(Redis)]
-    end
-
-
-    MainApi -- "1. Authenticate User" --> AuthApi
-    AuthApi -- "2. Issues JWT" --> MainApi
-
-    MainApi -- "3. Publishes 'MessageSent' event" --> Broker
-    MainApi -- "Writes data (posts, etc.)" --> DB
-
-    Broker -- "4. Consumes 'MessageSent' event" --> UserInteractions
-    UserInteractions -- "Writes/Reads data (messages, comments)" --> DB
-    UserInteractions -- "Caches/Reads frequently accessed data" --> Cache
-```
 
 ### Service Roles:
 - AuthApi: The dedicated identity provider. Its sole responsibility is to manage user accounts (registration, login) and issue signed JWTs for secure authentication. It holds the private key for signing tokens.
