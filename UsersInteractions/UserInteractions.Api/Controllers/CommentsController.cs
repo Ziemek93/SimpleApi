@@ -18,7 +18,6 @@ public class CommentsController : ControllerBase
     }
 
     [HttpGet("post/{Id}/[action]")]
-    [Authorize(Policy = "IsUser")]
     [Authorize(Roles = "User")]
     public async Task<IActionResult> Comments(int id, CancellationToken ct = default)
     {
@@ -34,17 +33,4 @@ public class CommentsController : ControllerBase
         }
         return Ok(response);
     }
-    
-    // [HttpPost("article/[action]")]
-    // public async Task<IActionResult> Comment(AddCommentCommand request, CancellationToken ct = default)
-    // {
-    //     var response = await _sender.Send(request, ct);
-    //
-    //     if (!response.Any())
-    //     {
-    //         NotFound();
-    //     }
-    //     return Ok(response);
-    // }
-    //
 }

@@ -16,14 +16,13 @@
     <None Remove="Auth\**" />
   </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Faker.Net" Version="2.0.163" />
-    <PackageReference Include="Faker" Version="1.2.0" />
-        <PackageReference Include="FastEndpoints" Version="5.23.0" />
-        <PackageReference Include="FastEndpoints.Generator" Version="5.23.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
-        <PackageReference Include="FastEndpoints.Security" Version="5.23.0" />
-        <PackageReference Include="FastEndpoints.Swagger" Version="5.23.0" />
+        <PackageReference Include="Bogus" Version="35.6.3" />
+        <PackageReference Include="FastEndpoints" Version="6.2.0" />
+        <PackageReference Include="FastEndpoints.Generator" Version="6.2.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+        <PackageReference Include="FastEndpoints.Security" Version="6.2.0" />
+        <PackageReference Include="FastEndpoints.Swagger" Version="6.2.0" />
         <PackageReference Include="FluentAssertions" Version="6.12.0" />
-        <PackageReference Include="FluentValidation" Version="11.9.0" />
+        <PackageReference Include="FluentValidation" Version="12.0.0" />
         <PackageReference Include="Flurl.Http" Version="4.0.2" />
         <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.4" />
@@ -35,8 +34,9 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.2" />
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1-Preview.1" />
         <PackageReference Include="MongoDB.Entities" Version="23.0.1" />
-        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
+        <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     </ItemGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="AppTests" />
@@ -46,5 +46,9 @@
       <Folder Include="Repositories\Category\" />
       <Folder Include="Services\CommentService\" />
       <Folder Include="Services\CategoryService\" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Shared\Shared.Auth\Shared.Auth.csproj" />
+      <ProjectReference Include="..\Shared\Shared.Broker\Shared.Broker.csproj" />
     </ItemGroup>
 </Project>

@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using UsersInteractions.Domain.Contracts;
 
@@ -8,17 +7,17 @@ namespace UserInteractions.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ChatContoller : ControllerBase
+public class ChatController : ControllerBase
 {
     private readonly ISender _sender;
 
-    public ChatContoller(ISender sender)
+    public ChatController(ISender sender)
     {
         _sender = sender;
     }
 
     [HttpGet("[action]/{firstChatParticipantId}/{secondChatParticipantId}")]
-    [Authorize(Policy = "IsUser")]
+    // [Authorize(Policy = "IsUser")]
     [Authorize(Roles = "User")]
     public async Task<IActionResult> LastMessages(int firstChatParticipantId, int secondChatParticipantId,
         CancellationToken ct = default)
@@ -40,7 +39,7 @@ public class ChatContoller : ControllerBase
     }
 
     [HttpGet("[action]/{firstChatParticipantId}/{secondChatParticipantId}")]
-    [Authorize(Policy = "IsUser")]
+    // [Authorize(Policy = "IsUser")]
     [Authorize(Roles = "User")]
     public async Task<IActionResult> Messages(int firstChatParticipantId, int secondChatParticipantId,
         int? paginationSize, int? pageNumber, DateTime? dateFrom, DateTime? dateTo, CancellationToken ct = default)

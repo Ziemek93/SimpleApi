@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 
 namespace MainApi.Endpoints.Public.Auth.Register;
 
-
 public class Endpoint : Endpoint<Request, Response>
 {
     private IConfiguration _config { get; set; }
@@ -19,7 +18,8 @@ public class Endpoint : Endpoint<Request, Response>
 
     //private static readonly IFlurlClient _flurlClient;
 
-    public Endpoint(IConfiguration config, ApplicationContext context, IOptions<AuthApiOptions> authApiOptions, IFlurlClientCache flurlClient)
+    public Endpoint(IConfiguration config, ApplicationContext context, IOptions<AuthApiOptions> authApiOptions,
+        IFlurlClientCache flurlClient)
     {
         _config = config;
         _context = context;
@@ -36,7 +36,6 @@ public class Endpoint : Endpoint<Request, Response>
     public override async Task HandleAsync(Request request, CancellationToken ct)
     {
         var path = $"{_authApiOptions.Base}{_authApiOptions.Paths.Register}";
-
 
         var flurlRequest = await _flurlClient
             .Request(path)
@@ -56,11 +55,9 @@ public class Endpoint : Endpoint<Request, Response>
             UserName = flurResponse.Username
         });
         await _context.SaveChangesAsync();
-        
+
         Response.Message = $"The user [{request.Username}] has been created.";
 
         await SendAsync(Response, cancellation: ct);
     }
-
 }
-

@@ -26,7 +26,7 @@ public static class DependencyInjection
         return services;
     }
     
-    public static void ApplyPendingMigrations<TDbContext>(this WebApplication app) 
+    public static async Task ApplyPendingMigrations<TDbContext>(this WebApplication app, bool isDev = false) 
         where TDbContext : IdentityDbContext<ApplicationUser>
     {
         // using var serviceScope = app.ApplicationServices.CreateScope();
@@ -42,10 +42,17 @@ public static class DependencyInjection
             logger.LogInformation("{appName}: Downloading dbcontext type {DbContextType}...", typeof(TDbContext).Name, appName);
             var dbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
 
+            if (isDev)
+            {
+                logger.LogInformation("{appName}: Dropping database...", appName);
+                var deleted = await dbContext.Database.EnsureDeletedAsync();
+                logger.LogInformation("{appName}: Database deleted: {deleted}", appName, deleted);
+            }
+            
             logger.LogInformation("{appName}: Checking migrations", appName);
-            dbContext.Database.MigrateAsync().GetAwaiter().GetResult();
+            await dbContext.Database.MigrateAsync();
 
-            logger.LogInformation("{appName}: migration completed.", appName);
+            logger.LogInformation("{appName}: migration completed.", appName, ConsoleColor.Blue);
         }
         catch (Exception ex)
         {

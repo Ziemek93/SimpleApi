@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
 using MassTransit;
 using MediatR;
+using Shared.Broker.Contracts;
 using UsersInteractions.Domain.Contracts;
-using UsersInteractions.Infrastructure.Events;
 
 namespace UsersInteractions.Infrastructure.Consumers;
 
-public class MessageReceivedEventHandler : IConsumer<AddChatMessageEvent>
+public class MessageReceivedEventHandler : IConsumer<CreateChatMessageContract>
 {
     private readonly IMediator _mediator;
 
@@ -15,7 +15,7 @@ public class MessageReceivedEventHandler : IConsumer<AddChatMessageEvent>
         _mediator = mediator;
     }
 
-    public async Task Consume(ConsumeContext<AddChatMessageEvent> eventBody)
+    public async Task Consume(ConsumeContext<CreateChatMessageContract> eventBody)
     {
         var message = eventBody.Message;
         var request = new SendMessageCommand
@@ -30,7 +30,7 @@ public class MessageReceivedEventHandler : IConsumer<AddChatMessageEvent>
     }
 }
 
-public class ChatMessageReceivedValidator : AbstractValidator<AddChatMessageEvent>
+public class ChatMessageReceivedValidator : AbstractValidator<CreateChatMessageContract>
 {
     public ChatMessageReceivedValidator()
     {

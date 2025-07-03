@@ -1,4 +1,4 @@
-﻿namespace UsersInteractions.Domain.Options;
+﻿namespace Shared.Auth.Options;
 
 public class M2MOptions
 {

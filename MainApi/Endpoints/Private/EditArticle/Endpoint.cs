@@ -1,6 +1,5 @@
 ﻿using FastEndpoints;
 using System.Security.Claims;
-using MainApi.Models;
 using MainApi.Models.ArticlesDao;
 using MainApi.Services.ArticleService;
 

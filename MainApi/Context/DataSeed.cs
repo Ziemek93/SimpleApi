@@ -1,6 +1,6 @@
-﻿using Faker;
-using MainApi.Models.Entities;
+﻿using MainApi.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using Bogus;
 
 namespace MainApi.Context;
 
@@ -35,15 +35,25 @@ public static class DataSeed
         modelBuilder.Entity<Tag>().HasData(tags);
 
         // Seed Articles
-        var articles = Enumerable.Range(1, 5).Select(i => new Article
-        {
-            ArticleId = i,
-            Name = Lorem.Sentence(),
-            Description = Lorem.Paragraphs(1).First(),
-            CategoryId = categories[(i - 1) % categories.Count].CategoryId,
-            UserId = 1,
-            Visibility = true
-        }).ToList();
+        var aId = 1;
+        var articlesFaker = new Faker<Article>()
+            .RuleFor(x => x.ArticleId, _ => aId++)
+            .RuleFor(x => x.Name, e => e.Lorem.Sentence(3))
+            .RuleFor(x => x.CategoryId, _ => categories[(aId - 1) % categories.Count].CategoryId)
+            .RuleFor(x => x.UserId, _ => 1)
+            .RuleFor(x => x.Visibility, e => e.Random.Bool());
+
+        var articles = articlesFaker.Generate(5);
+        
+        // var articles = Enumerable.Range(1, 5).Select(i => new Article
+        // {
+        //     ArticleId = i,
+        //     Name = Lorem.Sentence(),
+        //     Description = Lorem.Paragraphs(1).First(),
+        //     CategoryId = categories[(i - 1) % categories.Count].CategoryId,
+        //     UserId = 1,
+        //     Visibility = true
+        // }).ToList();
         modelBuilder.Entity<Article>().HasData(articles);
 
         // Seed Article-Tag many-to-many (join table)

@@ -35,7 +35,7 @@ namespace MainApi.Context
         {
 
 
-            DataSeed.SeedData(modelBuilder);
+            // DataSeed.SeedData(modelBuilder);
 
             base.OnModelCreating(modelBuilder);
 
@@ -53,7 +53,7 @@ namespace MainApi.Context
             #endregion
 
             #region Article
-            modelBuilder.Entity<Article>().HasOne(x => x.User) // Fix: Define the relationship explicitly
+            modelBuilder.Entity<Article>().HasOne(x => x.User)
                 .WithMany(x => x.Articles)
                 .HasForeignKey(x => x.UserId);
             modelBuilder.Entity<Article>().HasKey(x => x.ArticleId);

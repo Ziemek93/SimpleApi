@@ -1,6 +1,6 @@
-﻿namespace UsersInteractions.Infrastructure.Events;
+﻿namespace Shared.Broker.Contracts;
 
-public class AddCommentEvent
+public class CreateCommentContract
 {
     public string Content { get; set; }
     public string Login { get; set; }

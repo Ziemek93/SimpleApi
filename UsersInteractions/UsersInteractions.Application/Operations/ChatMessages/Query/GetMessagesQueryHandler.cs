@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using UsersInteractions.Application.Abstractions;
 using UsersInteractions.Application.Data;
 using UsersInteractions.Domain.Contracts;
 using UsersInteractions.Domain.Models.Dtos;

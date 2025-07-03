@@ -1,6 +1,5 @@
 ﻿using FastEndpoints;
 using MainApi.Models.ArticlesDto;
-using MainApi.Services;
 using MainApi.Services.ArticleService;
 
 namespace MainApi.Endpoints.Public.GetArticle;

@@ -4,29 +4,30 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using UsersInteractions.Domain.Options;
+using Shared.Auth.Options;
 
-namespace UsersInteractions.Infrastructure.Services;
+namespace Shared.Auth.Services;
 
 public class JwksService
 {
     private readonly IMemoryCache _cache;
     private readonly ILogger<JwksService> _logger;
-    private readonly AuthApiOptions _authApiOptions;
+    private readonly PublicKeyOptions _publicKeyOptions;
     private readonly IFlurlClient _flurlClient;
 
     private const string JwksCacheKey = "jwks_keys";
     
-    public JwksService(IFlurlClientCache flurlClient, IOptions<AuthApiOptions> authApiOptions, IMemoryCache cache, ILogger<JwksService> logger)
+    public JwksService(IFlurlClientCache flurlClient, IOptions<PublicKeyOptions> publicKeyOptions, IMemoryCache cache, ILogger<JwksService> logger)
     {
-        _authApiOptions = authApiOptions.Value;
-        _flurlClient = flurlClient.GetOrAdd(_authApiOptions.Base, _authApiOptions.Base);        _cache = cache;
+        _publicKeyOptions = publicKeyOptions.Value;
+        _flurlClient = flurlClient.GetOrAdd(_publicKeyOptions.Base);        
+        _cache = cache;
         _logger = logger;
     }
 
     public async Task<IEnumerable<SecurityKey>> GetSigningKeysAsync(CancellationToken ct = default)
     {
-        if (_cache.TryGetValue(JwksCacheKey, out IEnumerable<SecurityKey> cachedKeys))
+        if (_cache.TryGetValue(JwksCacheKey, out IList<JsonWebKey> cachedKeys))
         {
             _logger.LogInformation($"{nameof(JwksService)}: public key is already loaded");
             return cachedKeys!;
@@ -34,7 +35,7 @@ public class JwksService
 
         _logger.LogWarning("Loading key from AuthApi.");
 
-        var path = $"{_authApiOptions.Base}{_authApiOptions.Paths.PublicKey}";
+        var path = $"{_publicKeyOptions.Base}{_publicKeyOptions.Key}";
             
         // keys
         var jwks = await _flurlClient.Request(path)
@@ -47,12 +48,12 @@ public class JwksService
         {
             _logger.LogCritical($"{nameof(JwksService)}: Cannot access AuthApi or key not found!");
             throw new InvalidOperationException($"{nameof(JwksService)}: Cannot access AuthApi or key not found!");        }
-
+        
         var cacheEntryOptions = new MemoryCacheEntryOptions()
             .SetAbsoluteExpiration(TimeSpan.FromHours(24));
-
+        
         _cache.Set(JwksCacheKey, jwks.Keys, cacheEntryOptions);
-
+        
         return jwks.Keys;
     }
 }

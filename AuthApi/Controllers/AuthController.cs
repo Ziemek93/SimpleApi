@@ -21,7 +21,7 @@ public class AuthController : ControllerBase
     private readonly IEnumerable<M2MOptions> _m2mSettings;
 
     public AuthController(UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole> roleManager, Token token, IOptions<JwtOptions> jwtSettings, IOptions<IEnumerable<M2MOptions>> m2MSettings)
+        RoleManager<IdentityRole> roleManager, Token token, IOptions<JwtOptions> jwtSettings, IOptions<List<M2MOptions>> m2MSettings)
     {
         _userManager = userManager;
         _roleManager = roleManager;
