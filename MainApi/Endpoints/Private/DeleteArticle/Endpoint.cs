@@ -1,6 +1,5 @@
 ﻿using FastEndpoints;
 using System.Security.Claims;
-using MainApi.Models;
 using MainApi.Services.ArticleService;
 
 namespace MainApi.Endpoints.Private.DeleteArticle;
@@ -32,7 +31,7 @@ public class Endpoint : Endpoint<RequestRoute, bool>
             return;
         }
         
-        await SendAsync(result.Data, StatusCodes.Status204NoContent, token);
+        await SendOkAsync(result.Data, token);
     }
 
 }

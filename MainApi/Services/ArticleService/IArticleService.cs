@@ -1,8 +1,6 @@
-﻿using MainApi.Models;
-using MainApi.Models.ArticlesDao;
+﻿using MainApi.Models.ArticlesDao;
 using MainApi.Models.ArticlesDto;
 using MainApi.Models.Entities;
-using MainApi.Models.Enums;
 
 namespace MainApi.Services.ArticleService
 {

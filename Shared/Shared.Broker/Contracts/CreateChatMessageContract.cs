@@ -1,6 +1,6 @@
-﻿namespace UsersInteractions.Infrastructure.Events;
+﻿namespace Shared.Broker.Contracts;
 
-public class AddChatMessageEvent
+public class CreateChatMessageContract
 {
     public int SenderId { get; set; }
     public int RecipientId { get; set; }

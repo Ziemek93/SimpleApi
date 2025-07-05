@@ -1,5 +1,4 @@
 ﻿using FastEndpoints;
-using MainApi.Models;
 using MainApi.Models.ArticlesDto;
 using MainApi.Services.ArticleService;
 

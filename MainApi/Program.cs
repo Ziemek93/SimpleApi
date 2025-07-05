@@ -1,59 +1,54 @@
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Flurl.Http.Configuration;
+using MainApi;
 using MainApi.Context;
-using MainApi.Extensions;
 using MainApi.Options;
 using MainApi.Services;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Shared.Auth;
 
-namespace MainApi;
+var builder = WebApplication.CreateBuilder(args);
+var conntectionString = builder.Configuration.GetConnectionString("SomeAppDbConnection");
 
-public partial class Program
-{
-    static void Main(string[] args)
-    {
+builder.Host.UseSerilog((context, loggerConfig) => 
+    loggerConfig.ReadFrom.Configuration(context.Configuration));
 
-        var builder = WebApplication.CreateBuilder(args);
-        var conntectionString = builder.Configuration.GetConnectionString("SomeAppDbConnection");
-        builder.Services.AddScoped<ApplicationContext>();
-        //builder.Services.AddScoped<IAuthServiceOld, AuthServiceOld>();
+builder.Services.AddScoped<ApplicationContext>();
 
-
-        builder.Services.AddDbContext<ApplicationContext>(options =>
-        {
-            options.UseNpgsql(conntectionString);
-        });
-        builder.Services.Configure<AuthApiOptions>(builder.Configuration.GetSection("AuthApi"));
-
-        builder.Services.ConfigureBasicApiServices();
-        
-        builder.Services.AddSingleton<IFlurlClientCache, FlurlClientCache>();
-        builder.Services.AddMemoryCache();
-        builder.Services.AddSingleton<JwksService>();
-        builder.Services.ConfigureAuth(builder.Configuration);
-        builder.Services.ConfigureMassTransit(builder.Configuration);
+builder.Services.AddDbContext<ApplicationContext>(options => { options.UseNpgsql(conntectionString); });
+builder.Services.AddScoped<DatabaseSeeder>();
 
 
-        //Authentication and Authorization
-        var apiKey = builder.Configuration.GetSection("Auth").GetSection("ApiKey").Value;
+builder.Services.ConfigureBasicApiServices();
+builder.Services.Configure<AuthApiOptions>(builder.Configuration.GetSection("AuthApi"));
+
+builder.Services.AddSingleton<IFlurlClientCache, FlurlClientCache>();
+
+builder.Services.ConfigureAppAuth(builder.Configuration);
+builder.Services.AddFastEndpoints();
+
+builder.Services.ConfigureMassTransit(builder.Configuration);
+
+builder.Services.SwaggerDocument();
+
+var app = builder.Build();
+var isDev = app.Environment.IsDevelopment();
+
+app.UseSerilogRequestLogging();
+app.UseAppAuth();
+
+app
+    .UseFastEndpoints(
+        //c => { c.Endpoints.Configurator = epd => epd.AllowAnonymous(); }
+    ).UseSwaggerGen();
 
 
-        builder.Services.SwaggerDocument();
-
-        var app = builder.Build();
-
-        //app.MapGroup("/identity").MapIdentityApi<IdentityUser>();
-
-        app
-            .UseAuthentication()
-            .UseAuthorization()
-            .UseFastEndpoints(
-                //c => { c.Endpoints.Configurator = epd => epd.AllowAnonymous(); }
-            ).UseSwaggerGen();
+await app.ApplyPendingMigrations<ApplicationContext>(isDev);
+if(isDev)
+    await app.SeedDemoData();
 
 
-        app.ApplyPendingMigrations<ApplicationContext>();
-        app.Run();
-    }
-}
+
+app.Run();

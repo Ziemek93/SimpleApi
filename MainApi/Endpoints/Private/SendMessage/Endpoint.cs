@@ -2,9 +2,9 @@
 using FastEndpoints;
 using MainApi.Models;
 using MainApi.Models.Comments;
-using MainApi.Services.ArticleService;
 using MainApi.Services.UserService;
 using MassTransit;
+using Shared.Broker.Contracts;
 
 namespace MainApi.Endpoints.Private.SendMessage;
 
@@ -26,7 +26,7 @@ public class Endpoint : Endpoint<CreateChatMessageRequest, ResponseObject<bool>>
         Claims(ClaimTypes.Name);
         Roles("User");
         // Policies("AdminOnly");
-        Policies("IsUser");
+        // Policies("IsUser");
     }
 
     public override async Task HandleAsync(CreateChatMessageRequest req, CancellationToken token = default)
@@ -35,12 +35,19 @@ public class Endpoint : Endpoint<CreateChatMessageRequest, ResponseObject<bool>>
 
         if (!response.resultResponse)
         {
-            await SendAsync(null, StatusCodes.Status404NotFound, token);
+            await SendNotFoundAsync(token);
             return;
         }
 
-        await _publishEndpoint.Publish<CreateChatMessageRequest>(req, token);
+        var contract = new CreateChatMessageContract
+        {
+            SenderId = req.SenderId,
+            RecipientId = req.RecipientId,
+            Content = req.Content,
+        };
+        
+        await _publishEndpoint.Publish<CreateChatMessageContract>(contract, token);
 
-        await SendAsync(null, StatusCodes.Status204NoContent, token);
+        await SendNoContentAsync(token);
     }
 }

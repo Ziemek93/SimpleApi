@@ -45,6 +45,13 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=interactions
       - RABBITMQ_DEFAULT_PASS=secretpaswd
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
     restart: always
     ports:
       - "5672:5672"
@@ -60,6 +67,12 @@ services:
       - ConnectionStrings__AuthDb=Server=authdb;Database=AuthDb;User Id=sa;Password=SwN12345678;TrustServerCertificate=True
       - M2MClient__ClientSecret=${ClientSecret}
       - Jwt__PrivateKey=${JWT_PRIVATE_KEY_XML}
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1      
+      interval: 60s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
     ports:
       - "6000:8080"
       - "6060:8081"
@@ -71,10 +84,14 @@ services:
   
   userinteractions.api:
     depends_on:
-      - authdb
-      - interactionspostgresdb
-      - distributedcache
-      - messagebroker
+      interactionspostgresdb:
+        condition: service_started
+      authdb:
+        condition: service_started
+      messagebroker:
+        condition: service_healthy
+      distributedcache:
+        condition: service_started
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
@@ -82,6 +99,7 @@ services:
       - ConnectionStrings__InteractionsDbConnection=Server=interactionspostgresdb:5432;Database=InteractionsDbConnection;User id=postgres;Password=somesecretpassword123
       - ConnectionStrings__RabbitMq=amqp://interactions:secretpaswd@messagebroker:5672
       - ConnectionStrings__Redis=distributedcache:6379,password=somesecretpassword123,abortConnect=false
+      - PublicKey__Base=http://authapi:8080
     ports:
       - "6001:8080"
       - "6061:8081"
@@ -93,17 +111,26 @@ services:
   
   mainapi:
     depends_on:
-      - mainpostgresdb
-      - interactionspostgresdb
-      - authdb
-      - messagebroker
+      mainpostgresdb:
+        condition: service_started
+      interactionspostgresdb:
+        condition: service_started
+      authdb:
+        condition: service_started
+      messagebroker:
+        condition: service_started
+      authapi: 
+        condition: service_healthy
+      userinteractions.api:
+        condition: service_started
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__SomeAppDbConnection=Server=mainpostgresdb:5432;Database=SomeApp;User id=postgres;Password=somesecretpassword123
       - ConnectionStrings__RabbitMq=amqp://interactions:secretpaswd@messagebroker:5672
-      - AuthApi__Base=https://authapi:1433
+      - AuthApi__Base=http://authapi:8080
+      - PublicKey__Base=http://authapi:8080
       - M2MClient__ClientSecret=${ClientSecret}
     ports:
       - "6002:8080"

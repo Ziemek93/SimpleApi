@@ -1,17 +1,14 @@
 ﻿using System.Reflection;
 using FluentValidation;
 using MassTransit;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using UsersInteractions.Application.Abstractions;
 using UsersInteractions.Application.Data;
-using UsersInteractions.Domain.Options;
 using UsersInteractions.Infrastructure.Consumers;
 using UsersInteractions.Infrastructure.Data;
 using UsersInteractions.Infrastructure.Middleware;
@@ -40,7 +37,7 @@ public static class DependencyInjection
         return services;
     }
 
-    public static void ApplyPendingMigrations<TDbContext>(this IApplicationBuilder app)
+    public static async Task ApplyPendingMigrations<TDbContext>(this IApplicationBuilder app, bool isDev = false)
         where TDbContext : DbContext
     {
         using var serviceScope = app.ApplicationServices.CreateScope();
@@ -56,6 +53,13 @@ public static class DependencyInjection
                 appName);
             var dbContext = serviceScope.ServiceProvider.GetRequiredService<TDbContext>();
 
+            if (isDev)
+            {
+                logger.LogInformation("{appName}: Dropping database...", appName);
+                var deleted = await dbContext.Database.EnsureDeletedAsync();
+                logger.LogInformation("{appName}: Database deleted: {deleted}", appName, deleted);
+            }
+            
             logger.LogInformation("{appName}: Checking migrations", appName);
             dbContext.Database.Migrate();
 
@@ -78,19 +82,24 @@ public static class DependencyInjection
         // var consumerConfigs = configuration.GetSection("MessageConsumers")();
 
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-        // services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly(), ServiceLifetime.Scoped); // Możesz jawnie określić ServiceLifetime
 
         services.AddMassTransit(x =>
         {
             x.AddConsumer<CommentReceivedEventHandler>();
             x.AddConsumer<MessageReceivedEventHandler>();
-
+            
             x.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(connectionString);
-                // cfg.Host("localhost", "/", h => {
-                //     h.Username("guest");
-                //     h.Password("guest");
+                
+                // cfg.Message<UsersInteractions.Infrastructure.Events.CreateCommentRequest>(m =>
+                // {
+                //     m.SetEntityName(commentsOptions.Exchange);
+                // });
+                //
+                // cfg.Message<UsersInteractions.Infrastructure.Events.CreateChatMessageRequest>(m =>
+                // {
+                //     m.SetEntityName(chatOptions.Exchange);
                 // });
 
                 cfg.ReceiveEndpoint(commentsOptions.Queue, e =>
@@ -118,8 +127,6 @@ public static class DependencyInjection
                 });
 
                 cfg.UseRawJsonSerializer();
-
-                cfg.ConfigureEndpoints(context);
             });
         });
 

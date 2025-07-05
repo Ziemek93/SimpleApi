@@ -1,13 +1,12 @@
 ﻿using FluentValidation;
 using MassTransit;
 using MediatR;
+using Shared.Broker.Contracts;
 using UsersInteractions.Domain.Contracts;
-// using MassTransit.Mediator;
-using UsersInteractions.Infrastructure.Events;
 
 namespace UsersInteractions.Infrastructure.Consumers;
 
-public class CommentReceivedEventHandler : IConsumer<AddCommentEvent>
+public class CommentReceivedEventHandler : IConsumer<CreateCommentContract>
 {
     private readonly IMediator _mediator;
 
@@ -16,10 +15,7 @@ public class CommentReceivedEventHandler : IConsumer<AddCommentEvent>
         _mediator = mediator;
     }
 
-    // public CommentReceivedEventHandler()
-    // { }
-
-    public async Task Consume(ConsumeContext<AddCommentEvent> eventBody)
+    public async Task Consume(ConsumeContext<CreateCommentContract> eventBody)
     {
         var message = eventBody.Message;
         var request = new AddCommentCommand
@@ -33,7 +29,7 @@ public class CommentReceivedEventHandler : IConsumer<AddCommentEvent>
     }
 }
 
-public class CommentReceivedValidator : AbstractValidator<AddCommentEvent>
+public class CommentReceivedValidator : AbstractValidator<CreateCommentContract>
 {
     public CommentReceivedValidator()
     {

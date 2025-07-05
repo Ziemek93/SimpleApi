@@ -1,11 +1,9 @@
 ﻿using System.Security.Claims;
 using FastEndpoints;
-using MainApi.Models;
-using MainApi.Models.ArticlesDao;
 using MainApi.Models.Comments;
-using MainApi.Models.Entities;
 using MainApi.Services.ArticleService;
 using MassTransit;
+using Shared.Broker.Contracts;
 
 namespace MainApi.Endpoints.Private.AddComment;
 
@@ -40,8 +38,15 @@ public class Endpoint : Endpoint<CreateCommentRequest, bool>
             return;
         }
 
-        await _publishEndpoint.Publish<CreateCommentRequest>(req, token);
-        await SendAsync(result.Data, StatusCodes.Status204NoContent, token);
+        var contract = new CreateCommentContract
+        {
+            Content = req.Content,
+            Login = req.Login,
+            ArticleId = req.Id
+        };
+
+        await _publishEndpoint.Publish<CreateCommentContract>(contract, token);
+        await SendOkAsync(result.Data, token);
     }
 
 }

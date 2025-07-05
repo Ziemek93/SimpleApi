@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace MainApi.Services;
+﻿namespace MainApi.Services;
 
 /// <summary>
 /// Representing result of service operations.
