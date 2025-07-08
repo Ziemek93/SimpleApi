@@ -45,15 +45,15 @@ public class Token
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public string GenerateJwtToken(ApplicationUser  user, IList<string> userRoles = null)
+    public string GenerateJwtToken(ApplicationUser user, IList<string> userRoles = null)
     {
         // user claims
         var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Sub, user.ClientId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id)
+                new Claim(ClaimTypes.NameIdentifier, user.ClientId.ToString())
             };
 
         foreach (var userRole in userRoles)

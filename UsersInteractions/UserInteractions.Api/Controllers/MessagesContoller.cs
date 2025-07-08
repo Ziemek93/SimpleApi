@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UsersInteractions.Application.Abstractions;
 using UsersInteractions.Domain.Contracts;
 
 namespace UserInteractions.Api.Controllers;
@@ -10,22 +11,24 @@ namespace UserInteractions.Api.Controllers;
 public class ChatController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly IUserContext _userContext;
 
-    public ChatController(ISender sender)
+    public ChatController(ISender sender, IUserContext userContext)
     {
         _sender = sender;
+        _userContext = userContext;
     }
 
-    [HttpGet("[action]/{firstChatParticipantId}/{secondChatParticipantId}")]
+    [HttpGet("[action]/{secondUserId}")]
     // [Authorize(Policy = "IsUser")]
     [Authorize(Roles = "User")]
-    public async Task<IActionResult> LastMessages(int firstChatParticipantId, int secondChatParticipantId,
+    public async Task<IActionResult> LastMessages(int secondUserId,
         CancellationToken ct = default)
     {
         var request = new GetLastChatMessagesQuery
         {
-            FirstChatParticipantId = firstChatParticipantId,
-            SecondChatParticipantId = secondChatParticipantId
+            FirstChatParticipantId = _userContext.UserId,
+            SecondChatParticipantId = secondUserId
         };
 
         var response = await _sender.Send(request, ct);
@@ -38,16 +41,18 @@ public class ChatController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("[action]/{firstChatParticipantId}/{secondChatParticipantId}")]
+    [HttpGet("[action]/{secondUserId}")]
     // [Authorize(Policy = "IsUser")]
     [Authorize(Roles = "User")]
-    public async Task<IActionResult> Messages(int firstChatParticipantId, int secondChatParticipantId,
+    public async Task<IActionResult> Messages(int secondUserId,
         int? paginationSize, int? pageNumber, DateTime? dateFrom, DateTime? dateTo, CancellationToken ct = default)
     {
+        
+        
         var request = new GetChatMessagesQuery
         {
-            FirstChatParticipantId = firstChatParticipantId,
-            SecondChatParticipantId = secondChatParticipantId,
+            FirstChatParticipantId = _userContext.UserId,
+            SecondChatParticipantId = secondUserId,
             PaginationSize = paginationSize,
             PageNumber = pageNumber,
             DateFrom = dateFrom,

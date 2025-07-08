@@ -5,6 +5,7 @@ EXPOSE 8080
 EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+#ARG BUILD_CONFIGURATION=Debug
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["UsersInteractions/UserInteractions.Api/UserInteractions.Api.csproj", "UsersInteractions/UserInteractions.Api/"]
@@ -17,6 +18,7 @@ WORKDIR "/src/UsersInteractions/UserInteractions.Api"
 RUN dotnet build "./UserInteractions.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
+#ARG BUILD_CONFIGURATION=Debug
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./UserInteractions.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
