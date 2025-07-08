@@ -31,7 +31,14 @@ public class Endpoint : Endpoint<CreateChatMessageRequest, ResponseObject<bool>>
 
     public override async Task HandleAsync(CreateChatMessageRequest req, CancellationToken token = default)
     {
-        var response = await _service.CheckChatUsersAsync(req.SenderId, req.RecipientId, token);
+        if (!int.TryParse(req.UserId, out var senderId))
+        {
+            AddError("User id have incorrect format.");
+            await SendErrorsAsync(400, token);
+            return;
+        }
+        
+        var response = await _service.CheckChatUsersAsync(senderId, req.RecipientId, token);
 
         if (!response.resultResponse)
         {
@@ -41,7 +48,7 @@ public class Endpoint : Endpoint<CreateChatMessageRequest, ResponseObject<bool>>
 
         var contract = new CreateChatMessageContract
         {
-            SenderId = req.SenderId,
+            SenderId = senderId,
             RecipientId = req.RecipientId,
             Content = req.Content,
         };

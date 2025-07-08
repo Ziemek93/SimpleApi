@@ -29,9 +29,5 @@
     <ProjectReference Include="..\UsersInteractions.Application\UsersInteractions.Application.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Configurations\" />
-  </ItemGroup>
-
 
 </Project>

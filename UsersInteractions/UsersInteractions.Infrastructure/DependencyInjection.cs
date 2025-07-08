@@ -1,16 +1,21 @@
 ﻿using System.Reflection;
 using FluentValidation;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using UsersInteractions.Application.Abstractions;
 using UsersInteractions.Application.Data;
+using UsersInteractions.Infrastructure.Configurations;
 using UsersInteractions.Infrastructure.Consumers;
 using UsersInteractions.Infrastructure.Data;
+using UsersInteractions.Infrastructure.Messaging;
 using UsersInteractions.Infrastructure.Middleware;
 using UsersInteractions.Infrastructure.Options;
 using UsersInteractions.Infrastructure.Services;
@@ -19,7 +24,7 @@ namespace UsersInteractions.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructureServices
+    public static IServiceCollection AddInfrastructureConfiguration
         (this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("InteractionsDbConnection");
@@ -33,7 +38,20 @@ public static class DependencyInjection
         // redis setup
         services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
         services.AddScoped<ICacheService, RedisCacheService>();
+        
+        services.AddHttpContextAccessor();
+        services.AddScoped<IUserContext, UserContext>();
+        
+        return services;
+    }
 
+    public static IServiceCollection AddSignalRConfigiration(this IServiceCollection services)
+    {
+        services.AddSignalR();
+        services.AddSingleton<IPostConfigureOptions<JwtBearerOptions>, JwtOptionsConfiguration>();
+        services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
+        services.AddScoped<IMessageProcessorService, MessageProcessorService>();
+        
         return services;
     }
 

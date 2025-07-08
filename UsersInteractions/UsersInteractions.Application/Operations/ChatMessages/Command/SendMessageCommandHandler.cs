@@ -13,11 +13,15 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand>
 {
     private readonly IApplicationContext _dbContext;
     private readonly ICacheService _cache;
+    private readonly IMessageProcessorService _messageProcessor;
+    
     private const string CacheChatMessagesKeyPattern = "Chat_SenderId:{0};RecipientId:{1};";//"Date{2};";
-    public SendMessageCommandHandler(IApplicationContext context, ICacheService cache)
+    
+    public SendMessageCommandHandler(IApplicationContext context, ICacheService cache, IMessageProcessorService messageProcessor)
     {
         _dbContext = context.CreateDbContext();
         _cache = cache;
+        _messageProcessor = messageProcessor;
     }
     
     public async Task Handle(SendMessageCommand request, 
@@ -46,12 +50,14 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand>
             new ChatMessageDto(request.SenderId, request.RecipientId, request.Content, request.CreatedAt)
             );
         
-        // await _cache.GetAsync<List<ChatMessage>>(cacheKey);
-        // _cache.SetAsync(cacheKey, serializeMessage)
+        // Push to cache list
         await _cache.ListRightPushAsync(cacheKey, serializeMessage);
         await _cache.ListTrimAsync(cacheKey, 100, 1);
         
+        //Save do db
         await _dbContext.SaveChangesAsync(ct);
+        // Send notification
+        await _messageProcessor.ProcessNewMessage(request.SenderId.ToString(), request.RecipientId.ToString(), serializeMessage, request.CreatedAt, ct);
     }
 }
 
