@@ -52,3 +52,5 @@ if(isDev)
 
 
 app.Run();
+
+public partial class Program{}

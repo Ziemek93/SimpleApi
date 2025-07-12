@@ -40,7 +40,7 @@ public class Endpoint : Endpoint<CreateChatMessageRequest, ResponseObject<bool>>
         
         var response = await _service.CheckChatUsersAsync(senderId, req.RecipientId, token);
 
-        if (!response.resultResponse)
+        if (response.IsFailure)
         {
             await SendNotFoundAsync(token);
             return;

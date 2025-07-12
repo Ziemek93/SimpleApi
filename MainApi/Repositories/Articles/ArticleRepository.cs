@@ -14,7 +14,7 @@ public class ArticleRepository : IArticleRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Article>> GetArticlesAsync(CancellationToken token)
+    public async Task<IEnumerable<Article>> GetArticlesAsync(CancellationToken token = default)
     {
         await using var context = _context.CreateDbContext();
 

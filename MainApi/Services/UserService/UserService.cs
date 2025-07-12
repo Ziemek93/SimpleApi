@@ -13,7 +13,7 @@ public class UserService : IUserService
         _userRepository = userRepository;
     }
 
-    public async Task<ResponseTuple<bool, ResponseEnum>> CheckChatUsersAsync(int firstId, int secondId, CancellationToken ct = default)
+    public async Task<ServiceResult<bool>> CheckChatUsersAsync(int firstId, int secondId, CancellationToken ct = default)
     {
         var response = new ResponseTuple<bool, ResponseEnum>();
 
@@ -21,10 +21,9 @@ public class UserService : IUserService
 
         if (!result)
         {
-            return response.Make(false, ResponseEnum.NotFound, "Users don't exist");
+            return ServiceResult<bool>.Failure("Users don't exist");
         }
         
-        return response.Make(true, ResponseEnum.NotFound, "Users don't exist");
-        
+        return ServiceResult<bool>.Success(result);
     }
 }

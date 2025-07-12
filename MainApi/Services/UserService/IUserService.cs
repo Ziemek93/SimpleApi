@@ -5,5 +5,5 @@ namespace MainApi.Services.UserService;
 
 public interface IUserService
 {
-     Task<ResponseTuple<bool, ResponseEnum>> CheckChatUsersAsync(int firstId, int secondId, CancellationToken ct = default);
+     Task<ServiceResult<bool>> CheckChatUsersAsync(int firstId, int secondId, CancellationToken ct = default);
 }
