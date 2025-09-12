@@ -138,6 +138,12 @@ public class DatabaseSeeder
 
         var articles = articlesFaker.Generate(20);
         
+        foreach (var article in articles)
+        {
+            var randomTags = tags.OrderBy(_ => Guid.NewGuid()).Take(new Random().Next(1, 3)).ToList();
+            article.Tags = randomTags;
+        }
+        
         await _context.Articles.AddRangeAsync(articles);
         await _context.SaveChangesAsync(); 
 

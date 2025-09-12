@@ -1,6 +1,6 @@
 ﻿
 using MediatR;
-using Microsoft.Extensions.Logging; // Upewnij się, że masz pakiet Microsoft.Extensions.Logging
+using Microsoft.Extensions.Logging;
 
 namespace UsersInteractions.Application.Middleware
 {

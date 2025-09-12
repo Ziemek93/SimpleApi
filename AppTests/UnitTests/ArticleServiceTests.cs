@@ -21,6 +21,8 @@ public class ArticleServiceTests
         _mockArticleRepository = new Mock<IArticleRepository>();
         _articleService = new ArticleService(_mockArticleRepository.Object);
         _fixture = new Fixture();
+        _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
     }
 
     [Fact]
@@ -33,8 +35,8 @@ public class ArticleServiceTests
 
         Func<Article, ArticleDto> mapper = article => new ArticleDto
         {
-            ArticleName = article.Name,
-            ArticleDescription = article.Description,
+            Name = article.Name,
+            Description = article.Description,
             Visibility = false,
             Tags = article.Tags.Select(x=>x.Title).ToList()
         };
@@ -59,8 +61,8 @@ public class ArticleServiceTests
 
         Func<Article, ArticleDto> mapper = article => new ArticleDto
         {
-            ArticleName = article.Name,
-            ArticleDescription = article.Description,
+            Name = article.Name,
+            Description = article.Description,
             Visibility = false,
             Tags = article.Tags.Select(x=>x.Title).ToList()
         };
@@ -71,7 +73,7 @@ public class ArticleServiceTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Data.Should().NotBeNull();
-        result.Data.ArticleName.Should().Be(article.Name);
+        result.Data.Name.Should().Be(article.Name);
         _mockArticleRepository.Verify(x => x.GetArticleAsync(1, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -84,8 +86,8 @@ public class ArticleServiceTests
 
         Func<Article, ArticleDto> mapper = article => new ArticleDto
         {
-            ArticleName = article.Name,
-            ArticleDescription = article.Description,
+            Name = article.Name,
+            Description = article.Description,
             Visibility = false,
             Tags = article.Tags.Select(x=>x.Title).ToList()
         };

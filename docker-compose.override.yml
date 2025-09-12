@@ -65,7 +65,7 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__AuthDb=Server=authdb;Database=AuthDb;User Id=sa;Password=SwN12345678;TrustServerCertificate=True
-      - M2MClient__ClientSecret=${ClientSecret}
+      - M2MClients__0__ClientSecret=${CLIENT_SECRET}
       - Jwt__PrivateKey=${JWT_PRIVATE_KEY_XML}
     healthcheck:
       test: curl -f http://localhost:8080/health || exit 1      
@@ -130,8 +130,9 @@ services:
       - ConnectionStrings__SomeAppDbConnection=Server=mainpostgresdb:5432;Database=SomeApp;User id=postgres;Password=somesecretpassword123
       - ConnectionStrings__RabbitMq=amqp://interactions:secretpaswd@messagebroker:5672
       - AuthApi__Base=http://authapi:8080
+      - InteractionsApi__Base=http://userinteractions.api:8080
       - PublicKey__Base=http://authapi:8080
-      - M2MClient__ClientSecret=${ClientSecret}
+      - M2MClients__ClientSecret=${CLIENT_SECRET}
     ports:
       - "6002:8080"
       - "6062:8081"

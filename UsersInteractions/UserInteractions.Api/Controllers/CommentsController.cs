@@ -18,7 +18,7 @@ public class CommentsController : ControllerBase
     }
 
     [HttpGet("post/{Id}/[action]")]
-    [Authorize(Roles = "User")]
+    [Authorize(Policy = "CanWriteInteractions")]
     public async Task<IActionResult> Comments(int id, CancellationToken ct = default)
     {
         var request = new GetCommentsQuery

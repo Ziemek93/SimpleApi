@@ -42,10 +42,7 @@
         <InternalsVisibleTo Include="AppTests" />
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="Endpoints\Private\GetComments\" />
       <Folder Include="Repositories\Category\" />
-      <Folder Include="Services\CommentService\" />
-      <Folder Include="Services\CategoryService\" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Shared\Shared.Auth\Shared.Auth.csproj" />

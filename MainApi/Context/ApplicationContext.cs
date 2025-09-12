@@ -81,6 +81,8 @@ namespace MainApi.Context
             #region Tag
             modelBuilder.Entity<Tag>().HasIndex(x => x.Title)
                 .IsUnique();
+            modelBuilder.Entity<Tag>().HasMany(x => x.Articles)
+                .WithMany(x => x.Tags);
             #endregion
         }
         public ApplicationContext CreateDbContext()

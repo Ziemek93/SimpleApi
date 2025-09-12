@@ -47,7 +47,7 @@ if (isDev)
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseAppAuth();
 

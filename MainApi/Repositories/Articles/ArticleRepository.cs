@@ -21,6 +21,7 @@ public class ArticleRepository : IArticleRepository
         return await context.Articles
             //.Include(a => a.Comments)
             .Include(a => a.Tags)
+            .Include(a => a.Category)
             .ToListAsync(token); //GetArticles(context);
     }
 

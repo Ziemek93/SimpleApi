@@ -1,4 +1,5 @@
-﻿using MainApi.Repositories.Articles;
+﻿using MainApi.Interfaces;
+using MainApi.Repositories.Articles;
 using MainApi.Repositories.User;
 using MainApi.Services;
 using MainApi.Services.ArticleService;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         services.AddScoped<IArticleService, ArticleService>();
         services.AddScoped<IArticleRepository, ArticleRepository>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IM2MTokenService, M2MTokenService>();
         services.AddScoped<IUserRepository, UserRepository>();
 
         return services;

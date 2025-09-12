@@ -1,9 +1,14 @@
-﻿namespace MainApi.Models.ArticlesDto
+﻿using MainApi.Models.CategoriesDto;
+using MainApi.Models.Entities;
+
+namespace MainApi.Models.ArticlesDto
 {
     public class ArticleDto
     {
-        public string ArticleName { get; set; } = null!;
-        public string? ArticleDescription { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; } = null!;
+        public string? Description { get; set; }
+        public CategoryDto Category { get; set; }
         public bool Visibility { get; set; }
         public List<String> Tags { get; set; }
 

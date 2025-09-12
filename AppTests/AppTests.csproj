@@ -33,4 +33,11 @@
     <ProjectReference Include="..\MainApi\MainApi.csproj" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <None Update="appsettings.test.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

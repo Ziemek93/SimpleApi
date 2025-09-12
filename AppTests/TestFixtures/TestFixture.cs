@@ -1,46 +1,58 @@
-﻿using Flurl.Http;
-using Flurl.Http.Configuration;
-using MainApi;
-using MainApi.Models.Auth;
-using MainApi.Options;
+﻿using FastEndpoints.Testing;
+using Flurl.Http.Testing;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using System.Net;
-using System.Text.Json;
-using FastEndpoints.Testing;
+using Microsoft.Extensions.Configuration; // <-- Dodaj ten using
 
 namespace AppTests.TestFixtures;
 
 public class TestFixture : AppFixture<Program>
 {
-    // Użyjemy statycznego mocka, aby można było go konfigurować w poszczególnych testach
-    public static readonly Mock<IFlurlClient> FlurlClientMock = new();
+    // Zmieniono na PascalCase zgodnie z konwencją C#
+    public HttpTest httpTest { get; private set; }
 
     protected override void ConfigureApp(IWebHostBuilder builder)
     {
-        builder.ConfigureServices(services =>
+        // --- KLUCZOWA ZMIANA ---
+        // Mówimy hostowi, aby wczytał dodatkowy plik konfiguracyjny.
+        // Ta konfiguracja nadpisze wartości z appsettings.json.
+        builder.UseEnvironment("Testing");
+
+        builder.ConfigureAppConfiguration((context, configBuilder) =>
         {
-            // 1. Tworzymy mocka dla IFlurlClientCache, który zarządza klientami Flurl
-            var flurlClientCacheMock = new Mock<IFlurlClientCache>();
+            // Usuwamy istniejące źródła, aby mieć pewność, że nie ma konfliktów.
+            // configBuilder.Sources.Clear(); // Opcjonalne, ale może pomóc w diagnozie
 
-            // 2. Konfigurujemy go tak, aby dla adresu naszego testowego AuthApi
-            //    zawsze zwracał naszego statycznego, kontrolowanego mocka IFlurlClient.
-            flurlClientCacheMock
-                .Setup(x => x.GetOrAdd(It.IsAny<string>(), It.IsAny<string>(), null))
-                .Returns(FlurlClientMock.Object);
+            // Dodajemy nasz plik testowy.
+            // `optional: false` sprawi, że testy rzucą wyjątek, jeśli plik nie zostanie znaleziony.
+            // To jest lepsze niż ciche niepowodzenie.
+            configBuilder.AddJsonFile("appsettings.test.json", optional: false, reloadOnChange: false);
 
-            // 3. Zastępujemy prawdziwą implementację IFlurlClientCache w kontenerze DI
-            //    naszym mockiem. Od teraz każdy endpoint w MainApi, który spróbuje
-            //    użyć Flurl, dostanie naszą zaślepkę.
-            services.AddSingleton(flurlClientCacheMock.Object);
+            // --- KROK DIAGNOSTYCZNY ---
+            // Dodajmy do appsettings.test.json na chwilę klucz: "IsTestConfigLoaded": "YES"
+            // i sprawdźmy, czy jest on tutaj widoczny.
+            var tempConfig = configBuilder.Build();
+            var debugValue = tempConfig.GetValue<string>("IsTestConfigLoaded");
+            if (string.IsNullOrEmpty(debugValue))
+            {
+                // Jeśli testy kończą się tym wyjątkiem, to na 100% problemem jest
+                // brak pliku w katalogu wyjściowym (patrz punkt 1).
+                throw new InvalidOperationException(
+                    "KRYTYCZNY BŁĄD: Plik appsettings.test.json nie został znaleziony lub jest pusty. " +
+                    "Sprawdź właściwość 'Kopiuj do katalogu wyjściowego'!");
+            }
         });
     }
 
     protected override Task SetupAsync()
     {
-        // Resetujemy mocka przed każdym testem, aby testy były od siebie niezależne
-        FlurlClientMock.Reset();
+        // Przed każdym testem tworzymy nową instancję HttpTest.
+        httpTest = new HttpTest();
+        return Task.CompletedTask;
+    }
+    
+    protected override Task TearDownAsync()
+    {
+        httpTest?.Dispose();
         return Task.CompletedTask;
     }
 }

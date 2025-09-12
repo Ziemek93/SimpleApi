@@ -11,5 +11,6 @@ public class AuthApiOptions
         public string Register { get; set; } = string.Empty;
         public string Refresh { get; set; } = string.Empty;
         public string Logout { get; set; } = string.Empty;
+        public string TokenM2M { get; set; } = string.Empty;
     }
 }
